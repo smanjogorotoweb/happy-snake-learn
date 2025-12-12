@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Dulu! | Happy Snake Learn XII-3 + Quiz</title>
+  <style>
+    /* -------------------------------------
+       GLOBAL STYLES (DARI KODE GAME)
+    ------------------------------------- */
+    body {
+      margin: 0;
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(180deg, #b3e5fc, #e1f5fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      padding-top: 20px;
+    }
+
+    h1, p {
+      text-align: center;
+    }
+
+    /* -------------------------------------
+       LOGIN STYLES
+    ------------------------------------- */
+    .login-container {
+      width: 360px;
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+    }
+
+    .header {
+      background: #ff8c8c;
+      height: 180px;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      color: white;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      font-size: 16px;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .content h2 {
+      margin: 0 0 20px 0;
+      font-size: 28px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* BARU: Container untuk input password dan toggle */
+    .password-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ffa6a6;
+      border-radius: 10px;
+      box-sizing: border-box;
+      outline: none;
+      /* BARU: Sesuaikan agar tidak tumpang tindih dengan tombol toggle */
+      padding-right: 40px; 
+    }
+    
+    /* BARU: Tombol Toggle Password (Mata) */
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #555;
+        font-size: 18px;
+    }
+
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #ff7a7a;
+      border: none;
+      font-size: 16px;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #ff6060;
+    }
+
+    .msg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: green;
+      text-align: center;
+    }
+
+    .error {
+      color: red;
+    }
+
+    /* -------------------------------------
+       GAME STYLES (Diambil dari kode game)
+    ------------------------------------- */
+    #gameArea {
+      display: none;
+      width: 100%;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(20, 24px);
+      grid-template-rows: repeat(20, 24px);
+      gap: 2px;
+      background: #a7ffeb;
+      padding: 10px;
+      border-radius: 20px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .cell {
+      width: 24px;
+      height: 24px;
+      background-color: #e0f2f1;
+      border-radius: 6px;
+    }
+    .snake { background-color: #4caf50; border-radius: 5px; }
+    .snake-body { background-color: #66bb6a; border-radius: 5px; }
+    .food { background-color: #ff5252; border-radius: 50%; }
+
+    /* STYLING KONTROL ARAH */
+    #arrows {
+      display: grid;
+      grid-template-columns: repeat(3, 70px);
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 30px;
+    }
+   #arrows button {
+      padding: 18px;
+      font-size: 0;
+      font-weight: bold;
+      border-radius: 12px;
+      background-color: #ff8a65;
+      color: white;
+      border: none;
+      cursor: pointer;
+      min-width: 70px;
+      position: relative;
+    }
+    #arrows button::before {
+      font-size: 24px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #btnUp::before { content: "▲"; }
+    #btnDown::before { content: "▼"; }
+    #btnLeft::before { content: "◄"; }
+    #btnRight::before { content: "►"; }
+
+    #startBtn {
+      padding: 10px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      background-color: #00acc1;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-top: 5px;
+      margin-bottom: 20px;
+    }
+
+    /* STYLING QUIZ BOX */
+    #quizBox {
+      display: none;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      width: 300px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      margin-top: 20px;
+    }
+    #quizInput {
+      width: 90%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #aaa;
+      margin-top: 10px;
+    }
+    #checkBtn, #passBtn {
+      padding: 10px 20px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 5px;
+    }
+    #checkBtn { background: #4caf50; color: white; }
+    #passBtn { background: #ff7043; color: white; }
+    .resultIcon {
+      font-size: 24px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+    .correct { color: green; }
+    .wrong { color: red; }
+  </style>
+</head>
+<body>
+  <div class="login-container" id="loginContainer">
+    <div class="header">
+      <h1>WELCOME XII3 SMAN JOGOROTO</h1>
+      <p>Play and Learn</p>
+    </div>
+
+    <div class="content">
+      <h2>Sign In</h2>
+      <label>Username</label>
+      <input type="text" id="user" placeholder="Enter username" />
+
+      <label>Password</label>
+      
+      <div class="password-wrapper">
+          <input type="password" id="pass" placeholder="Enter password" />
+          <span class="toggle-password" onclick="togglePasswordVisibility()">
+              👁️
+          </span>
+      </div>
+
+      <button class="btn" onclick="login()">Login</button>
+
+      <div id="message" class="msg"></div>
+    </div>
+  </div>
+
+  <div id="gameArea">
+    <h1>🐍 Happy Snake Learn XII-3🍎</h1>
+    <p id="score">Skor: 0</p>
+    <p id="timer">Waktu: 0 detik</p>
+
+    <div id="game"></div>
+
+    <button id="startBtn">Mulai Game 🎮</button>
+
+    <div id="arrows">
+      <button id="btnUp" style="grid-column: 2; grid-row: 1;">U</button>
+      <button id="btnLeft" style="grid-column: 1; grid-row: 2;">L</button>
+      <button id="btnDown" style="grid-column: 2; grid-row: 2;">D</button>
+      <button id="btnRight" style="grid-column: 3; grid-row: 2;">R</button>
+    </div>
+
+    <div id="quizBox">
+      <h3 id="quizQuestion"></h3>
+      <input id="quizInput" placeholder="Jawaban..." />
+      <div class="resultIcon" id="quizResult"></div>
+      <button id="checkBtn">Cek Jawaban</button>
+      <button id="passBtn">Pass</button>
+    </div>
+  </div>
+
+  <script>
+    // ===================================
+    // LOGIN LOGIC
+    // ===================================
+    function login() {
+      const u = document.getElementById('user').value;
+      const p = document.getElementById('pass').value;
+      const loginMsg = document.getElementById('message');
+      const loginContainer = document.getElementById('loginContainer');
+      const gameArea = document.getElementById('gameArea');
+
+      if (u === 'smanjojotik' && p === '123321') {
+        loginMsg.textContent = 'Login Berhasil! Memuat Game...';
+        loginMsg.classList.remove('error');
+        
+        // Sembunyikan Login, Tampilkan Game
+        setTimeout(() => {
+          loginContainer.style.display = 'none';
+          gameArea.style.display = 'flex'; // Tampilkan konten game
+        }, 800);
+
+      } else {
+        loginMsg.textContent = 'Username atau Password salah!';
+        loginMsg.classList.add('error');
+      }
+    }
+    
+    // BARU: FUNGSI TOGGLE PASSWORD
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('pass');
+        const toggleButton = document.querySelector('.toggle-password');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🔒'; // Ganti ikon menjadi terkunci
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️'; // Ganti ikon menjadi mata
+        }
+    }
+
+
+    // ===================================
+    // GAME LOGIC (Diambil dari kode Snake)
+    // ===================================
+    const gridSize = 20;
+    const game = document.getElementById("game");
+
+    const scoreText = document.getElementById("score");
+    const timerText = document.getElementById("timer");
+    const startBtn = document.getElementById("startBtn");
+
+    // Elemen Quiz
+    const quizBox = document.getElementById("quizBox");
+    const quizQuestion = document.getElementById("quizQuestion");
+    const quizInput = document.getElementById("quizInput");
+    const quizResult = document.getElementById("quizResult");
+    const checkBtn = document.getElementById("checkBtn");
+    const passBtn = document.getElementById("passBtn");
+
+    // Elemen Tombol Arah
+    const btnUp = document.getElementById("btnUp");
+    const btnDown = document.getElementById("btnDown");
+    const btnLeft = document.getElementById("btnLeft");
+    const btnRight = document.getElementById("btnRight");
+
+
+    const cells = [];
+    let snake, direction, food, score, timeElapsed;
+    let gameInterval, timerInterval;
+
+    // ==========================
+    // BANK SOAL
+    // ==========================
+    const questions = [
+      { q: "Apa planet terbesar di tata surya?", a: "jupiter" },
+      { q: "Apa nama ilmiah air?", a: "h2o" },
+      { q: "Apa fungsi utama paru-paru?", a: "untuk bernapas" },
+      { q: "Suhu air mendidih dalam tekanan normal?", a: "100" },
+      { q: "Gas apa yang kita hirup untuk hidup?", a: "oksigen" }
+    ];
+
+    let allQuestions = [...questions];
+    let remainingQuestions = [...questions];
+    let currentQuestion = null;
+
+    // QUIZ SYSTEM
+    function showQuiz() {
+      // Hentikan Game
+      clearInterval(gameInterval);
+      clearInterval(timerInterval);
+
+      if (remainingQuestions.length === 0) {
+        quizQuestion.textContent = "Semua pertanyaan sudah dijawab! Permainan selesai!";
+        checkBtn.style.display = "none";
+        passBtn.style.display = "none";
+        quizInput.style.display = "none";
+        quizResult.textContent = "";
+        quizBox.style.display = "block";
+        return;
+      }
+
+      quizBox.style.display = "block";
+      quizInput.value = "";
+      quizResult.textContent = "";
+      quizInput.style.display = "block";
+      checkBtn.style.display = "inline-block";
+      passBtn.style.display = "inline-block";
+
+
+      const index = Math.floor(Math.random() * remainingQuestions.length);
+      currentQuestion = remainingQuestions[index];
+
+      quizQuestion.textContent = `Anda Kalah! Jawab ini untuk bermain lagi: ${currentQuestion.q}`;
+    }
+
+    checkBtn.onclick = () => {
+      const userAns = quizInput.value.trim().toLowerCase();
+
+      if (!userAns) return;
+
+      if (userAns === currentQuestion.a) {
+        quizResult.textContent = "✅ Benar! Lanjut Main!";
+        quizResult.className = "resultIcon correct";
+
+        remainingQuestions = remainingQuestions.filter(q => q !== currentQuestion);
+
+        setTimeout(() => {
+          quizBox.style.display = 'none';
+          initGame(); 
+        }, 800);
+
+      } else {
+        quizResult.textContent = "❌ Salah. Coba lagi.";
+        quizResult.className = "resultIcon wrong";
+      }
+    };
+
+    passBtn.onclick = () => {
+      showQuiz();
+    };
+
+    // GAME CORE FUNCTIONS
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      game.appendChild(cell);
+      cells.push(cell);
+    }
+
+    function initGame() {
+      if (remainingQuestions.length === 0) {
+          remainingQuestions = [...allQuestions];
+      }
+
+      snake = [210, 211];
+      direction = 1;
+      score = 0;
+      timeElapsed = 0;
+
+      scoreText.textContent = "Skor: " + score;
+      timerText.textContent = "Waktu: 0 detik";
+
+      cells.forEach(c => c.className = "cell");
+
+      drawSnake();
+      placeFood();
+
+      clearInterval(gameInterval);
+      clearInterval(timerInterval);
+
+      gameInterval = setInterval(move, 160);
+
+      timerInterval = setInterval(() => {
+        timeElapsed++;
+        timerText.textContent = "Waktu: " + timeElapsed + " detik";
+      }, 1000);
+    }
+
+    function drawSnake() {
+      cells.forEach(c => c.classList.remove("snake", "snake-body"));
+      snake.forEach((pos, index) => {
+        if (index === snake.length - 1) {
+          cells[pos].classList.add("snake");
+        } else {
+          cells[pos].classList.add("snake-body");
+        }
+      });
+    }
+
+    function placeFood() {
+      do {
+        food = Math.floor(Math.random() * (gridSize * gridSize));
+      } while (snake.includes(food));
+
+      cells.forEach(c => c.classList.remove("food"));
+      cells[food].classList.add("food");
+    }
+
+    function move() {
+      const head = snake[snake.length - 1];
+      const newHead = head + direction;
+
+      // TABRAKAN
+      if (
+        (direction === 1 && head % gridSize === gridSize - 1) ||
+        (direction === -1 && head % gridSize === 0) ||
+        (direction === gridSize && head >= gridSize * (gridSize - 1)) ||
+        (direction === -gridSize && head < gridSize) ||
+        snake.includes(newHead)
+      ) {
+        showQuiz(); 
+        return;
+      }
+
+      snake.push(newHead);
+
+      if (newHead === food) {
+        score++;
+        scoreText.textContent = "Skor: " + score;
+        placeFood();
+      } else {
+        snake.shift();
+      }
+
+      drawSnake();
+    }
+
+    // FUNGSI PENGATUR ARAH
+    function changeDirection(newDirection) {
+        const isOpposite = (direction === 1 && newDirection === -1) ||
+                           (direction === -1 && newDirection === 1) ||
+                           (direction === gridSize && newDirection === -gridSize) ||
+                           (direction === -gridSize && newDirection === gridSize);
+
+        if (!isOpposite) {
+          direction = newDirection;
+        }
+    }
+
+    // KEYBOARD LISTENER
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") changeDirection(-gridSize);
+      if (e.key === "ArrowDown") changeDirection(gridSize);
+      if (e.key === "ArrowLeft") changeDirection(-1);
+      if (e.key === "ArrowRight") changeDirection(1);
+    });
+
+    // TOMBOL MOUSE/SENTUH
+    btnUp.onclick = () => changeDirection(-gridSize);
+    btnDown.onclick = () => changeDirection(gridSize);
+    btnLeft.onclick = () => changeDirection(-1);
+    btnRight.onclick = () => changeDirection(1);
+
+    startBtn.onclick = initGame;
+  </script>
+
+</body>
+</html>
